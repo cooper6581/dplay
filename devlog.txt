@@ -1,5 +1,18 @@
 17/01/12 - 20:00 - 21:00
 * Started project, wrote the first part of the loader (checks sig)
 
-18/01/12 - 10:00 -
+18/01/12 - 10:30 - 12:00
 * Created git repo
+* Finished sample header loader
+* Note:  Always carefully read documentation!!!
+
+18/01/12 - 13:30 - 13:40
+* Order info
+
+18/01/12 - 14:00 - 15:44
+* Pattern Data
+  * That was hard, and I think will need to be re-worked...
+
+18/01/12 - 16:10
+* Start reading portaudio documentation to see how to play a sample
+  * Damn, what did I get myself into  :(
