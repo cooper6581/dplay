@@ -1,0 +1,5 @@
+17/01/12 - 20:00 - 21:00
+* Started project, wrote the first part of the loader (checks sig)
+
+18/01/12 - 10:00 -
+* Created git repo
