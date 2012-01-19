@@ -7,6 +7,7 @@
 PaStream *stream;
 int length;
 int offset;
+int stupid;
 
 static int patestCallback(const void *inputBuffer, void *outputBuffer,
     unsigned long framesPerBuffer,
@@ -22,7 +23,7 @@ static int patestCallback(const void *inputBuffer, void *outputBuffer,
     if (offset >= length)
       *out++ = 0;
     else
-    *out++ = data[offset++] *.2;
+        *out++ = data[offset++] *.2;
   }
   return paContinue;
 }
@@ -59,8 +60,6 @@ void init_mixer(struct Module *m, int n)
   printf("I think it worked...\n");
   printf("starting stream\n");
   Pa_StartStream( stream );
-  Pa_Sleep( 2 * 1000 );
-  Pa_StopStream( stream );
   return;
 
 error:

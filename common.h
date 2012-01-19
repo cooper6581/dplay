@@ -31,4 +31,7 @@ struct Module
   struct PatternData *pattern_data;
 };
 
+long long get_millis(void);
+void delay_millis(int m);
+
 #endif
