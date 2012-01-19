@@ -129,7 +129,7 @@ static int load_patterns(struct Module *module, char *buffer)
   pos = module->pattern_data;
 
   // cross fingers...
-  for(int i = 0; i < module->number_of_patterns; i++) {
+  for(int i = 0; i < module->number_of_patterns + 1; i++) {
     // CHECK:  Is it expensive to do this multiplication each iteration?
     for(int j = 0; j < 64 * module->channels; j++) {
       // reading each line in the pattern

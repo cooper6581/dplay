@@ -13,6 +13,7 @@
 * Pattern Data
   * That was hard, and I think will need to be re-worked...
 
-18/01/12 - 16:10
+18/01/12 - 16:10 - 19:00
 * Start reading portaudio documentation to see how to play a sample
   * Damn, what did I get myself into  :(
+* Hacked together a sample player

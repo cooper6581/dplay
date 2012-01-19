@@ -19,11 +19,11 @@ static int patestCallback(const void *inputBuffer, void *outputBuffer,
   char *out = (char *) outputBuffer;
 
   for(i = 0; i < framesPerBuffer; i++) {
-    *out++ = data[i + offset] *.2;
+    if (offset >= length)
+      *out++ = 0;
+    else
+    *out++ = data[offset++] *.2;
   }
-  offset += i;
-  if (offset >= length)
-    return paComplete;
   return paContinue;
 }
 
