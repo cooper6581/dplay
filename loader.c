@@ -21,7 +21,7 @@ struct Module * load_module(char *fname)
     fprintf(stderr,"Problem loading file, exiting\n");
     if (buffer != NULL)
       free(buffer);
-    return 1;
+    return NULL;
   }
   // check if it's a valid MOD
   memcpy(sig,&buffer[1080],4);
@@ -38,7 +38,7 @@ struct Module * load_module(char *fname)
   else {
     fprintf(stderr,"Not a valid mod file, missing signature\n");
     free(buffer);
-    return 2;
+    return NULL;
   }
 
   // read in the module name
