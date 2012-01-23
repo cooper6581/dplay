@@ -1,3 +1,5 @@
+#include <stdio.h> 
+#include "portaudio.h"
 #include "common.h"
 #include "mixer.h"
 
@@ -5,9 +7,6 @@
 #define FRAMES 64
 
 PaStream *stream;
-int length;
-int offset;
-int stupid;
 
 static int patestCallback(const void *inputBuffer, void *outputBuffer,
     unsigned long framesPerBuffer,
@@ -16,29 +15,27 @@ static int patestCallback(const void *inputBuffer, void *outputBuffer,
     void *userData)
 {
   int i;
-  char *data = (char *)userData;
+  struct Player *p = (struct Player *)userData;
+  //char *data = p->mixer_buffer;
   char *out = (char *) outputBuffer;
 
   for(i = 0; i < framesPerBuffer; i++) {
-    if (offset >= length)
-      *out++ = 0;
+    if(p->offset >= p->size) {
+      printf("This should never happen...\n");
+      return paContinue;
+    }
     else
-        *out++ = data[offset++] *.2;
+      *out++ = p->mixer_buffer[p->offset++] *.5;
   }
   return paContinue;
 }
 
 
-void init_mixer(struct Module *m, int n)
+void init_mixer(struct Player *p)
 {
   PaStreamParameters outputParameters;
   PaStream *stream;
   PaError err;
-  char *data;
-
-  data = m->samples[n].sample_data;
-  length = m->samples[n].length;
-  offset = 0;
 
   err = Pa_Initialize();
   if(err != paNoError) goto error;
@@ -49,32 +46,23 @@ void init_mixer(struct Module *m, int n)
     goto error;
   }
 
+  // until I come up with good upsampling code, 8-bit 8k mono
   outputParameters.channelCount = 1;
   outputParameters.sampleFormat = paInt8;
   outputParameters.suggestedLatency = 
     Pa_GetDeviceInfo( outputParameters.device )->defaultLowOutputLatency;
   outputParameters.hostApiSpecificStreamInfo = NULL;
-  err = Pa_OpenStream( &stream, NULL, &outputParameters, SAMPLE_RATE, FRAMES,
-      paClipOff, patestCallback, data);
+  err = Pa_OpenStream( &stream, NULL, &outputParameters, 
+                        SAMPLE_RATE, FRAMES, paClipOff, 
+                        patestCallback, p);
   if (err != paNoError) goto error;
-  printf("I think it worked...\n");
   printf("starting stream\n");
   Pa_StartStream( stream );
   return;
-
+//TODO: This is ghetto, fix asap
 error:
   Pa_Terminate();
   fprintf( stderr, "An error occured while using the portaudio stream\n" );
   fprintf( stderr, "Error number: %d\n", err );
   fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
-}
-
-void play_sample(struct Module *m, int n)
-{
-  //data = m->samples[n].sample_data;
-  length = m->samples[n].length;
-  printf("starting stream\n");
-  Pa_StartStream( stream );
-  Pa_Sleep( 2 * 1000 );
-  Pa_StopStream( stream );
 }

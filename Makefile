@@ -1,5 +1,5 @@
 test:
-	gcc -std=gnu99 -g -Wall -lrt -lasound -lpthread -lportaudio -o test loader.c common.c test.c mixer.c
+	gcc -std=gnu99 -g -Wall -lrt -lasound -lpthread -lportaudio -o test loader.c common.c test.c mixer.c player.c
 
 clean:
 	rm -rf *.o test

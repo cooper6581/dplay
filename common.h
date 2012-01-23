@@ -31,6 +31,15 @@ struct Module
   struct PatternData *pattern_data;
 };
 
+struct Player
+{
+  char mixer_buffer[20000];
+  int offset;
+  int ready;
+  int size;
+  struct PatternData *pos;
+};
+
 long long get_millis(void);
 void delay_millis(int m);
 

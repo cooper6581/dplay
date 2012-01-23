@@ -17,3 +17,15 @@
 * Start reading portaudio documentation to see how to play a sample
   * Damn, what did I get myself into  :(
 * Hacked together a sample player
+
+19/01/12 - Random poking while watching TV at night after some whisky
+* Hacked a really basic non-portable timer
+* Should be firing at 50hz with 1ms accuracy (in theory)
+
+20/01/12 - 12:30 13:30
+* Clean mixer
+
+23/01/12 - 12:30 - 14:00
+* Retarded basic sample mixer
+  * Distorts an insane amount...
+* Crude method to pitch samples up / down
