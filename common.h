@@ -37,7 +37,9 @@ struct Player
   int offset;
   int ready;
   int size;
+  int count;
   struct PatternData *pos;
+  struct Module *module;
 };
 
 long long get_millis(void);

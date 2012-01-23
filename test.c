@@ -42,24 +42,22 @@ int main(int argc, char **argv)
 {
   struct Module *m;
   struct Player p;
+  p.count = 0;
   long long start_time;
   long long elapsed;
   long long last;
   m = load_module(argv[1]);
-  p.size = 10000;
-  p.pos = m->pattern_data;
+  p.module = m;
+  p.size = 1024;
+  p.pos = &m->pattern_data[1];
   memset(p.mixer_buffer, 0, p.size);
   init_mixer(&p);
   for(;;) {
-    start_time = get_millis();
-    memset(p.mixer_buffer, 0, p.size);
-    play_module(&p, m);
-    last = get_millis();
-    elapsed = last - start_time;
-    start_time = elapsed;
-    delay_millis(20 - elapsed);
+    delay_millis(20);
+    continue;
   }
   printf("1 second\n");
+  printf("call back ran: %d\n",p.count);
   //play_sample(m,0);
   return 0;
 }

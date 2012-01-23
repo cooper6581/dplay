@@ -1,10 +1,12 @@
 #include <stdio.h> 
+#include <string.h>
 #include "portaudio.h"
 #include "common.h"
 #include "mixer.h"
+#include "player.h"
 
 #define SAMPLE_RATE 8363
-#define FRAMES 64
+#define FRAMES 1024
 
 PaStream *stream;
 
@@ -16,17 +18,21 @@ static int patestCallback(const void *inputBuffer, void *outputBuffer,
 {
   int i;
   struct Player *p = (struct Player *)userData;
+  struct Module *m = p->module;
   //char *data = p->mixer_buffer;
   char *out = (char *) outputBuffer;
+  play_module(p, m);
+  memcpy(out, p->mixer_buffer, framesPerBuffer);
 
+  /*
   for(i = 0; i < framesPerBuffer; i++) {
     if(p->offset >= p->size) {
-      printf("This should never happen...\n");
       return paContinue;
     }
     else
       *out++ = p->mixer_buffer[p->offset++] *.5;
   }
+  */
   return paContinue;
 }
 

@@ -6,6 +6,9 @@ static void update_row(struct Player *p, const struct Module *m);
 
 void play_module(struct Player *p, const struct Module *m)
 {
+  update_row(p, m);
+  p->pos+=4;
+  /*
   static int tick;
   tick++;
   if(tick >= 5) {
@@ -13,6 +16,7 @@ void play_module(struct Player *p, const struct Module *m)
     tick = 0;
     p->pos+=4;
   }
+  */
 }
 
 static void update_row(struct Player *p, const struct Module *m)
@@ -41,20 +45,20 @@ static void update_row(struct Player *p, const struct Module *m)
         va = m->samples[cr[0].sample_number-1].sample_data[(int)ia];
     }
     if(cr[1].sample_number != 0) {
-      if(ib <= m->samples[cr[1].sample_number].length)
-        vb = m->samples[cr[1].sample_number].sample_data[(int)ib];
+      if(ib <= m->samples[cr[1].sample_number-1].length)
+        vb = m->samples[cr[1].sample_number-1].sample_data[(int)ib];
     }
-    if(cr[2].sample_number != 2) {
-      if(ic <= m->samples[cr[2].sample_number].length)
-        vc = m->samples[cr[2].sample_number].sample_data[(int)ic];
+    if(cr[2].sample_number != 0) {
+      if(ic <= m->samples[cr[2].sample_number-1].length)
+        vc = m->samples[cr[2].sample_number-1].sample_data[(int)ic];
     }
-    if(cr[3].sample_number != 3) {
-      if(id <= m->samples[cr[3].sample_number].length)
-        vd = m->samples[cr[3].sample_number].sample_data[(int)id];
+    if(cr[3].sample_number != 0) {
+      if(id <= m->samples[cr[3].sample_number-1].length)
+        vd = m->samples[cr[3].sample_number-1].sample_data[(int)id];
     }
 
-    //tmp = (va + vb + vc + vd) / 4; 
-    tmp = va;
+    tmp = (va + vb + vc + vd) / 4; 
+    //tmp = va;
     ia += fa;
     ib += fb;
     ic += fc;
