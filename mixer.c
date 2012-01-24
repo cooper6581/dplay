@@ -5,9 +5,6 @@
 #include "mixer.h"
 #include "player.h"
 
-#define SAMPLE_RATE 8363
-#define FRAMES 1024
-
 PaStream *stream;
 
 static int patestCallback(const void *inputBuffer, void *outputBuffer,
@@ -16,23 +13,13 @@ static int patestCallback(const void *inputBuffer, void *outputBuffer,
     PaStreamCallbackFlags statusFlags,
     void *userData)
 {
-  int i;
   struct Player *p = (struct Player *)userData;
   struct Module *m = p->module;
-  //char *data = p->mixer_buffer;
   char *out = (char *) outputBuffer;
-  play_module(p, m);
-  memcpy(out, p->mixer_buffer, framesPerBuffer);
-
-  /*
-  for(i = 0; i < framesPerBuffer; i++) {
-    if(p->offset >= p->size) {
-      return paContinue;
-    }
-    else
-      *out++ = p->mixer_buffer[p->offset++] *.5;
-  }
-  */
+  play_module(p, m, framesPerBuffer);
+  //memcpy(out, &p->mixer_buffer[p->offset], framesPerBuffer);
+  memcpy(out, &p->mixer_buffer[p->offset], framesPerBuffer);
+  p->offset += framesPerBuffer;
   return paContinue;
 }
 

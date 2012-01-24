@@ -88,7 +88,7 @@ void print_module(struct Module *m)
     printf("%03d ", m->order[i]);
   }
   printf("\n\n");
-  print_pattern(m, 0);
+  print_pattern(m, 2);
 }
 
 static void load_sample_data(struct Module *module, char *buffer, int soffset)
