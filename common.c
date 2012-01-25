@@ -17,3 +17,10 @@ void delay_millis(int m)
   ts.tv_nsec = m * 1000000UL;
   nanosleep(&ts, &tr);
 }
+
+/*
+int note_from_period(int period)
+{
+  for(int i = 8; i < 
+}
+*/
