@@ -18,9 +18,12 @@ void delay_millis(int m)
   nanosleep(&ts, &tr);
 }
 
-/*
 int note_from_period(int period)
 {
-  for(int i = 8; i < 
+  for(int i = 8; i < 576; i+=16) {
+    if(period < freq_table[i] + 2 && period > freq_table[i] - 2)
+      return i;
+  }
+  return 0;
 }
-*/
+

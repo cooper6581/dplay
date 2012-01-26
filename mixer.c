@@ -17,7 +17,6 @@ static int patestCallback(const void *inputBuffer, void *outputBuffer,
   struct Module *m = p->module;
   char *out = (char *) outputBuffer;
   play_module(p, m, framesPerBuffer);
-  //memcpy(out, &p->mixer_buffer[p->offset], framesPerBuffer);
   memcpy(out, &p->mixer_buffer[p->offset], framesPerBuffer);
   p->offset += framesPerBuffer;
   return paContinue;

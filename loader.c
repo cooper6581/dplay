@@ -88,7 +88,7 @@ void print_module(struct Module *m)
     printf("%03d ", m->order[i]);
   }
   printf("\n\n");
-  print_pattern(m, 2);
+  print_pattern(m, m->order[0]);
 }
 
 static void load_sample_data(struct Module *module, char *buffer, int soffset)
@@ -139,8 +139,9 @@ static int load_patterns(struct Module *module, char *buffer)
       // reading each line in the pattern
       pos->sample_number = ((unsigned char)buffer[offset] & 0x0F0) + 
         ((unsigned char)buffer[offset+2] >> 4);
-      pos->period = (((unsigned char)buffer[offset] & 0x0F)<<8) + 
+      int period = (((unsigned char)buffer[offset] & 0x0F)<<8) + 
         (unsigned char)buffer[offset+1];
+      pos->period = note_from_period(period);
       pos->effect = (unsigned char)buffer[offset+2] & 0x0F;
       pos->eparam = (unsigned char)buffer[offset+3];
       pos++;

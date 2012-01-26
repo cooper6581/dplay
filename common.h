@@ -1,8 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define SAMPLE_RATE 22000
-#define FRAMES 8
+#define SAMPLE_RATE 44100
+#define FRAMES 441
 
 static const int freq_table[] = {
   907,900,894,887,881,875,868,862,856,850,844,838,832,826,820,814,
@@ -89,6 +89,7 @@ struct Channel
   float volume;
   // pointer to the current sample number
   struct Sample *sample;
+  int note;
   int played;
   int effect;
   int eparam;
@@ -115,5 +116,6 @@ struct Player
 
 long long get_millis(void);
 void delay_millis(int m);
+int note_from_period(int period);
 
 #endif
