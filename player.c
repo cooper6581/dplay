@@ -93,9 +93,12 @@ static void update_tick(struct Player *p)
 {
   struct PatternData *pos = p->pos;
   for (int c = 0; c < p->num_channels; c++) {
+    struct Channel *cn = &p->channels[c];
+    int ex = 0;
+    int ey = 0;
+    get_xy(cn->eparam, &ex, &ey);
     // check for arp
-    if (p->channels[c].effect == 0 && p->channels[c].eparam != 0) {
-      struct Channel *cn = &p->channels[c];
+    if (cn->effect == 0 && cn->eparam != 0) {
       if (cn->note == 0)
 	break;
       switch(p->ticks % 3) {
@@ -103,10 +106,10 @@ static void update_tick(struct Player *p)
 	cn->pitch = get_pitch(cn->sample, cn->note);
 	break;
       case 1:
-	cn->pitch = get_pitch(cn->sample, cn->note + ((cn->eparam & 0x0f) * 16));
+	cn->pitch = get_pitch(cn->sample, cn->note + (ey * 16));
 	break;
       case 2:
-	cn->pitch = get_pitch(cn->sample, cn->note + ((cn->eparam >> 4) * 16));
+	cn->pitch = get_pitch(cn->sample, cn->note + (ex * 16));
 	break;
       default:
 	break;
