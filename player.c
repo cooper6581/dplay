@@ -57,8 +57,6 @@ void play_module(struct Player *p,
 
 static void update_buffer(struct Player *p)
 {
-
-  struct PatternData *pos = p->pos;
   for(int i = 0; i < p->size; i++) {
     int temp = 0;
     for (int c = 0; c < p->num_channels; c++) {
@@ -91,7 +89,6 @@ static void update_buffer(struct Player *p)
 // TODO:  SO insanely ghetto
 static void update_tick(struct Player *p)
 {
-  struct PatternData *pos = p->pos;
   for (int c = 0; c < p->num_channels; c++) {
     struct Channel *cn = &p->channels[c];
     int ex = 0;
