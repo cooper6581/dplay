@@ -125,6 +125,8 @@ static void update_tick(struct Player *p)
 	break;
       }
     }
+    // Currently causing gapper like effect on 
+    //        ./mod/radix-rainy_summerdays.mod
     else if (cn->effect == 10 && cn->eparam != 0) {
       if (ex > 0 || (ex > 0 && ey > 0)) {
 	float res = (float) ex * (p->ticks - 1);
@@ -190,6 +192,9 @@ static void update_row(struct Player *p,
       get_xy(cr[i].eparam, &p->p_break_x, &p->p_break_y);
       break;
     // Set speed
+    case 0xe:
+      printf("Effect 14: %d\n", cr[i].eparam);
+      break;
     case 0xf:
       p->speed = cr[i].eparam;
       break;
@@ -206,7 +211,7 @@ static float get_pitch(struct Sample *sample, int note)
   if(sample != NULL)
     ft = sample->fine_tune;
   amiga_value = freq_table[note + ft];
-  return (7159090.5 / (amiga_value * 2)) / 44100.0;
+  return (7159090.5 / (amiga_value * 2.0)) / 44100.0;
 }
 
 static void get_xy(int col, int *x, int *y)
