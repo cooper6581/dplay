@@ -117,10 +117,10 @@ static void update_tick(struct Player *p)
       if (ex > 0 || (ex > 0 && ey > 0)) {
 	float res = (float) ex * (p->ticks - 1);
 	float test = cn->volume * 64.0 + res;
-	if (test >= 0 && test <= 64)
+	if (test <= 64)
 	  cn->volume += res / 64.0;
 	else
-	  printf("Attempting to go outside range\n");
+	  cn->volume = 1.0;
       } else {
 	float res = (float) ey * (p->ticks - 1);
 	float test = cn->volume * 64.0 - res;
