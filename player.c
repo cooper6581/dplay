@@ -5,6 +5,7 @@
 static void update_row(struct Player *p, struct Module *m, 
                         unsigned long count);
 static void update_tick(struct Player *p);
+static void update_buffer(struct Player *p);
 static float get_pitch(struct Sample *sample, int note);
 static void get_xy(int col, int *x, int *y);
 
@@ -54,9 +55,9 @@ void play_module(struct Player *p,
   update_tick(p);
 }
 
-// TODO:  SO insanely ghetto
-static void update_tick(struct Player *p)
+static void update_buffer(struct Player *p)
 {
+
   struct PatternData *pos = p->pos;
   for(int i = 0; i < p->size; i++) {
     int temp = 0;
@@ -65,25 +66,6 @@ static void update_tick(struct Player *p)
       s = p->channels[c].sample;
       if(s == NULL)
         continue;
-      // check for arp
-      if (p->channels[c].effect == 0 && p->channels[c].eparam != 0) {
-        struct Channel *cn = &p->channels[c];
-        if (cn->note == 0)
-          break;
-        switch(p->ticks % 3) {
-          case 0:
-            cn->pitch = get_pitch(cn->sample, cn->note);
-            break;
-          case 1:
-            cn->pitch = get_pitch(cn->sample, cn->note + ((cn->eparam & 0x0f) * 16));
-            break;
-          case 2:
-            cn->pitch = get_pitch(cn->sample, cn->note + ((cn->eparam >> 4) * 16));
-            break;
-          default:
-            break;
-        }
-      }
       // loop samples
       if (s->loop_length > 2) {
         if(p->channels[c].offset >= s->loop_length + s->loop_start)
@@ -103,6 +85,35 @@ static void update_tick(struct Player *p)
     temp = temp / 4.0;
     p->mixer_buffer[i] = (char)temp;
   }
+
+}
+
+// TODO:  SO insanely ghetto
+static void update_tick(struct Player *p)
+{
+  struct PatternData *pos = p->pos;
+  for (int c = 0; c < p->num_channels; c++) {
+    // check for arp
+    if (p->channels[c].effect == 0 && p->channels[c].eparam != 0) {
+      struct Channel *cn = &p->channels[c];
+      if (cn->note == 0)
+	break;
+      switch(p->ticks % 3) {
+      case 0:
+	cn->pitch = get_pitch(cn->sample, cn->note);
+	break;
+      case 1:
+	cn->pitch = get_pitch(cn->sample, cn->note + ((cn->eparam & 0x0f) * 16));
+	break;
+      case 2:
+	cn->pitch = get_pitch(cn->sample, cn->note + ((cn->eparam >> 4) * 16));
+	break;
+      default:
+	break;
+      }
+    }
+  }
+  update_buffer(p);
 }
 
 static void update_row(struct Player *p, 
