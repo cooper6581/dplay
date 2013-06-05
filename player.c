@@ -87,6 +87,7 @@ static void update_buffer(struct Player *p)
 }
 
 // TODO:  SO insanely ghetto
+// This function is used to update effects that need to update each tick
 static void update_tick(struct Player *p)
 {
   for (int c = 0; c < p->num_channels; c++) {
@@ -110,6 +111,23 @@ static void update_tick(struct Player *p)
 	break;
       default:
 	break;
+      }
+    }
+    else if (cn->effect == 10 && cn->eparam != 0) {
+      if (ex > 0 || (ex > 0 && ey > 0)) {
+	float res = (float) ex * (p->ticks - 1);
+	float test = cn->volume * 64.0 + res;
+	if (test >= 0 && test <= 64)
+	  cn->volume += res / 64.0;
+	else
+	  printf("Attempting to go outside range\n");
+      } else {
+	float res = (float) ey * (p->ticks - 1);
+	float test = cn->volume * 64.0 - res;
+	if (test > 0)
+	  cn->volume -= res / 64.0;
+	else
+	  cn->volume = 0;
       }
     }
   }
@@ -138,23 +156,28 @@ static void update_row(struct Player *p,
       p->channels[i].sample = &m->samples[cr[i].sample_number-1];
       p->channels[i].volume = p->channels[i].sample->volume / 64.0;
     }
-    if(cr[i].effect == 0xc) {
-      p->channels[i].volume = cr[i].eparam / 64.0;
-    }
-    if(cr[i].effect == 0xf) {
-      p->speed = cr[i].eparam;
-    }
-    if(cr[i].effect == 0xe5) {
-      printf("Fucking finetune\n");
-    }
-    // arp
-    if(cr[i].effect == 0x00 && cr[i].eparam != 0x00) {
-      p->channels[i].effect = 0;
+    switch (cr[i].effect) {
+    // These effects require processing each tick
+    //////////////////////////////////////////////
+    // Arpeggio
+    case 0x00:
+    // Volume slide
+    case 0x0A:
+      p->channels[i].effect = cr[i].effect;
       p->channels[i].eparam = cr[i].eparam;
-    }
-    else if (cr[i].effect == 0 && cr[i].eparam == 0) {
-      p->channels[i].effect = 0;
-      p->channels[i].eparam = 0;
+      break;
+     // These effects require processing each row
+     ////////////////////////////////////////////
+    // Set volume 
+    case 0xc:
+      p->channels[i].volume = cr[i].eparam / 64.0;
+      break;
+    // Set speed
+    case 0xf:
+      p->speed = cr[i].eparam;
+      break;
+    default:
+      printf("Effect %d not implemented\n", cr[i].effect);
     }
   }
 }
