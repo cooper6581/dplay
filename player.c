@@ -6,6 +6,7 @@ static void update_row(struct Player *p, struct Module *m,
                         unsigned long count);
 static void update_tick(struct Player *p);
 static float get_pitch(struct Sample *sample, int note);
+static void get_xy(int col, int *x, int *y);
 
 void init_player(struct Player *p, struct Module *m)
 {
@@ -40,7 +41,6 @@ void play_module(struct Player *p,
   p->ticks++;
   if(p->ticks >= p->speed) {
     update_row(p, m, count);
-    update_tick(p);
     p->ticks = 0;
     p->row++;
     if(p->row < 64)
@@ -51,8 +51,7 @@ void play_module(struct Player *p,
       p->pos = &m->pattern_data[m->order[p->order_index] * m->channels * 64];
     }
   }
-  else
-    update_tick(p);
+  update_tick(p);
 }
 
 // TODO:  SO insanely ghetto
@@ -159,3 +158,8 @@ static float get_pitch(struct Sample *sample, int note)
   return (7159090.5 / (amiga_value * 2)) / 44100.0;
 }
 
+static void get_xy(int col, int *x, int *y)
+{
+  *x = col >> 4;
+  *y = col & 0x0f;
+}
