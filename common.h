@@ -108,6 +108,9 @@ struct Player
   int order_index;
   int row;
   int ticks;
+  int p_break;
+  int p_break_x;
+  int p_break_y;
   // currently hardcoded to 4 to make sure I don't have to rewrite
   struct Channel channels[4];
   struct PatternData *pos;

@@ -18,6 +18,9 @@ void init_player(struct Player *p, struct Module *m)
   p->order_index = 0;
   p->speed = 6;
   p->row = 0;
+  p->p_break = 0;
+  p->p_break_x = 0;
+  p->p_break_y = 0;
   p->ticks = p->speed;
   p->pos = &m->pattern_data[m->order[p->order_index]* m->channels * 64];
   memset(p->mixer_buffer, 0, p->size);
@@ -41,6 +44,15 @@ void play_module(struct Player *p,
   // main play routine
   p->ticks++;
   if(p->ticks >= p->speed) {
+    // check for pattern break
+    if (p->p_break) {
+      p->order_index++;
+      p->row = p->p_break_x * 10 + p->p_break_y;
+      p->pos = &m->pattern_data[m->order[p->order_index] * m->channels * 64];
+      p->p_break = 0;
+      p->p_break_x = 0;
+      p->p_break_y = 0;
+    }
     update_row(p, m, count);
     p->ticks = 0;
     p->row++;
@@ -171,6 +183,11 @@ static void update_row(struct Player *p,
     // Set volume 
     case 0xc:
       p->channels[i].volume = cr[i].eparam / 64.0;
+      break;
+    // Pattern break
+    case 0xd:
+      p->p_break = 1;
+      get_xy(cr[i].eparam, &p->p_break_x, &p->p_break_y);
       break;
     // Set speed
     case 0xf:
