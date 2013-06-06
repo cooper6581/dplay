@@ -116,8 +116,7 @@ static void update_tick(struct Player *p)
 	break;
       }
     }
-    // Currently causing gapper like effect on 
-    //        ./mod/radix-rainy_summerdays.mod
+    // volume slide
     else if (cn->effect == 10 && cn->eparam != 0) {
       if (ex > 0 || (ex > 0 && ey > 0)) {
 	float res = (float) ex * (p->ticks - 1);
@@ -135,6 +134,22 @@ static void update_tick(struct Player *p)
 	  cn->volume = 0;
       }
     }
+    // porta up
+    else if (cn->effect == 1) {
+      // don't run effect for the first tick
+      if (p->ticks) {
+	// XXX put in check to not go higher than B-3
+	cn->pitch = get_pitch(cn->sample, cn->note - cn->eparam);
+      }
+    }
+    // porta down
+    else if (cn->effect == 2) {
+      // don't run effect for the first tick
+      if (p->ticks) {
+	// XXX put in check to not go higher than B-3
+	cn->pitch = get_pitch(cn->sample, cn->note + cn->eparam);
+      }
+    }	
   }
 }
 
@@ -168,6 +183,10 @@ static void update_row(struct Player *p,
     //////////////////////////////////////////////
     // Arpeggio
     case 0x00:
+    // Porta up
+    case 0x01:
+    // Porta down
+    case 0x02:
     // Volume slide
     case 0x0A:
       p->channels[i].effect = cr[i].effect;
