@@ -33,13 +33,6 @@ void init_player(struct Player *p, struct Module *m)
 void play_module(struct Player *p, 
                   struct Module *m, unsigned long count)
 {
-  // check to see if our buffer has been written out
-  //if(p->offset >= p->size) {
-  //  p->offset=0;
-  //}
-  // if not, lets not waste CPU cycles
-  //if(p->offset!=0)
-  //  return;
   // main play routine
   p->ticks++;
   if(p->ticks >= p->speed) {
@@ -167,6 +160,10 @@ static void update_row(struct Player *p,
       p->channels[i].sample = &m->samples[cr[i].sample_number-1];
       p->channels[i].volume = p->channels[i].sample->volume / 64.0;
     }
+    // XXX:  This is a hack that needs to be fixed
+    // clear the channel effects
+    p->channels[i].effect = 0;
+    p->channels[i].eparam = 0;
     switch (cr[i].effect) {
     // These effects require processing each tick
     //////////////////////////////////////////////
@@ -188,13 +185,21 @@ static void update_row(struct Player *p,
       p->p_break = 1;
       get_xy(cr[i].eparam, &p->p_break_x, &p->p_break_y);
       break;
-    // Set speed
     case 0xe:
       printf("Effect 14: %d\n", cr[i].eparam);
       break;
-    case 0xf:
-      p->speed = cr[i].eparam;
+    // Set speed
+    case 0xf: {
+      int x = 0;
+      int y = 0;
+      get_xy(cr[i].eparam, &x, &y);
+      int z = x * 16 + y;
+      if (z <+ 32)
+	p->speed = z;
+      else
+	printf("speed greater than 32 not supported.\n");
       break;
+    }
     default:
       printf("Effect %d not implemented\n", cr[i].effect);
     }
