@@ -23,13 +23,15 @@ void init_player(struct Player *p, struct Module *m)
   p->p_break_x = 0;
   p->p_break_y = 0;
   p->rate = 1000000 / 50;
-  p->ticks = p->speed;
+  p->ticks = 0;
   p->pos = &m->pattern_data[m->order[p->order_index]* m->channels * 64];
   memset(p->mixer_buffer, 0, p->size);
   for(int c = 0; c < p->num_channels; c++) {
     memset(&p->channels[c], 0, sizeof(struct Channel));
     p->channels[c].sample = NULL;
     p->channels[c].effect = -1;
+    p->porta_speed[c] = 0;
+    p->note_to_porta_to[c] = 0;
   }
 }
 
@@ -37,7 +39,7 @@ void play_module(struct Player *p,
                   struct Module *m, unsigned long count)
 {
   // main play routine
-  p->ticks++;
+  //p->ticks++;
   if(p->ticks >= p->speed) {
     // check for pattern break
     if (p->p_break) {
@@ -60,6 +62,7 @@ void play_module(struct Player *p,
     }
   }
   update_tick(p);
+  p->ticks++;
 }
 
 void update_buffer(struct Player *p, int framesPerBuffer)
@@ -87,7 +90,7 @@ void update_buffer(struct Player *p, int framesPerBuffer)
         p->channels[c].offset+=p->channels[c].pitch;
       }
     }
-    temp = temp / 4.0;
+    temp /= 4;
     p->mixer_buffer[i] = (char)temp;
   }
 }
@@ -149,10 +152,34 @@ static void update_tick(struct Player *p)
     else if (cn->effect == 2) {
       // don't run effect for the first tick
       if (p->ticks) {
-	// XXX put in check to not go higher than B-3
+	// XXX put in check to not go lower than C-1
 	cn->pitch = get_pitch(cn->sample, cn->note + cn->eparam);
       }
-    }	
+    }
+    // Porta slide
+    else if (cn->effect == 3) {
+      if (p->ticks == 0) {
+	// we need to read the previous row
+	struct PatternData *cr = p->pos - 4;
+	if (cn->eparam)
+	  p->porta_speed[c] = cn->eparam;
+	if (cr[c].period)
+	  p->note_to_porta_to[c] = cr[c].period;
+      } else {
+	if (cn->note == p->note_to_porta_to[c]) {
+	  printf("hit target note: %d\n", cn->note);
+	} else {
+	  if (p->note_to_porta_to[c] > cn->note) {
+	    cn->note += p->porta_speed[c];
+	    cn->pitch = get_pitch(cn->sample, cn->note);
+	  }
+	  else {
+	    cn->note -= p->porta_speed[c];
+	    cn->pitch = get_pitch(cn->sample, cn->note);
+	  }
+	}
+      }
+    }
   }
 }
 
@@ -164,8 +191,8 @@ static void update_row(struct Player *p,
   // index for each channel used for freq playback
   // calculate the freq ratio for each channel
   for(int i = 0 ; i < p->num_channels; i++) {
-    // ONLY RESET PITCH IF THERE IS A PERIOD VALUE
-    if(cr[i].period != 0) {
+    // ONLY RESET PITCH IF THERE IS A PERIOD VALUE AND PORTA NOT SET
+    if(cr[i].period != 0 && cr[i].effect !=3) {
       p->channels[i].pitch = get_pitch(p->channels[i].sample, cr[i].period);
       p->channels[i].note = cr[i].period;
       // ONLY RESET SAMPLE IF THERE IS A PERIOD VALUE
@@ -190,6 +217,8 @@ static void update_row(struct Player *p,
     case 0x01:
     // Porta down
     case 0x02:
+    // Porta to note
+    case 0x03:
     // Volume slide
     case 0x0A:
       p->channels[i].effect = cr[i].effect;
@@ -217,11 +246,13 @@ static void update_row(struct Player *p,
       int y = 0;
       get_xy(cr[i].eparam, &x, &y);
       int z = x * 16 + y;
-      if (z <= 31)
+      if (z < 32)
 	p->speed = z;
       // XXX set bpm
-      else
+      else {
 	p->rate = bpm_to_rate(cr[i].eparam);
+	printf("Set rate to %ld\n", p->rate);
+      }
       break;
     }
     default:

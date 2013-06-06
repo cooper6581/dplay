@@ -110,6 +110,9 @@ struct Player
   int p_break;
   int p_break_x;
   int p_break_y;
+  // xxx:  should be dynamic to support more than 4 channels
+  int porta_speed[4];
+  int note_to_porta_to[4];
   long rate;
   // currently hardcoded to 4 to make sure I don't have to rewrite
   struct Channel channels[4];

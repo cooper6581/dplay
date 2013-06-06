@@ -5,6 +5,8 @@
 #include "mixer.h"
 #include "player.h"
 
+#define FRAMES 256
+
 PaStream *stream;
 
 static int patestCallback(const void *inputBuffer, void *outputBuffer,
@@ -43,7 +45,7 @@ void init_mixer(struct Player *p)
     Pa_GetDeviceInfo( outputParameters.device )->defaultLowOutputLatency;
   outputParameters.hostApiSpecificStreamInfo = NULL;
   err = Pa_OpenStream( &stream, NULL, &outputParameters, 
-                        SAMPLE_RATE, 0, paClipOff, 
+                        SAMPLE_RATE, FRAMES, paClipOff, 
                         patestCallback, p);
   if (err != paNoError) goto error;
   printf("starting stream\n");
