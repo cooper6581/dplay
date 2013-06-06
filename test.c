@@ -9,12 +9,9 @@
 #include "mixer.h"
 #include "player.h"
 
-#define RATE 1000000 / 50.0
-
 int main(int argc, char **argv)
 {
   long useconds;
-  long rate = RATE;
   struct timeval start, elapsed;
   struct Module *m;
   struct Player p;
@@ -26,9 +23,8 @@ int main(int argc, char **argv)
     play_module(&p, m, 1024);
     gettimeofday(&elapsed, NULL);
     useconds = elapsed.tv_usec - start.tv_usec;
-    usleep(rate - useconds);
+    usleep(p.rate - useconds);
     continue;
   }
-  printf("1 second\n");
   return 0;
 }

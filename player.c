@@ -8,6 +8,8 @@ static void update_tick(struct Player *p);
 static float get_pitch(struct Sample *sample, int note);
 static void get_xy(int col, int *x, int *y);
 
+extern long rate;
+
 void init_player(struct Player *p, struct Module *m)
 {
   p->module = m;
@@ -20,6 +22,7 @@ void init_player(struct Player *p, struct Module *m)
   p->p_break = 0;
   p->p_break_x = 0;
   p->p_break_y = 0;
+  p->rate = 1000000 / 50;
   p->ticks = p->speed;
   p->pos = &m->pattern_data[m->order[p->order_index]* m->channels * 64];
   memset(p->mixer_buffer, 0, p->size);
@@ -196,6 +199,8 @@ static void update_row(struct Player *p,
      ////////////////////////////////////////////
     // Set volume 
     case 0xc:
+      if (cr[i].eparam > 64)
+	cr[i].eparam = 64;
       p->channels[i].volume = cr[i].eparam / 64.0;
       break;
     // Pattern break
@@ -212,10 +217,11 @@ static void update_row(struct Player *p,
       int y = 0;
       get_xy(cr[i].eparam, &x, &y);
       int z = x * 16 + y;
-      if (z <+ 32)
+      if (z <= 31)
 	p->speed = z;
+      // XXX set bpm
       else
-	printf("speed greater than 32 not supported.\n");
+	p->rate = bpm_to_rate(cr[i].eparam);
       break;
     }
     default:

@@ -110,14 +110,14 @@ struct Player
   int p_break;
   int p_break_x;
   int p_break_y;
+  long rate;
   // currently hardcoded to 4 to make sure I don't have to rewrite
   struct Channel channels[4];
   struct PatternData *pos;
   struct Module *module;
 };
 
-long long get_millis(void);
-void delay_millis(int m);
 int note_from_period(int period);
+long bpm_to_rate(int bpm);
 
 #endif

@@ -12,3 +12,7 @@ int note_from_period(int period)
   return 0;
 }
 
+long bpm_to_rate(int bpm)
+{
+  return 1000000 / ((bpm * 2) / 5);
+}
