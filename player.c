@@ -153,6 +153,9 @@ static void update_row(struct Player *p,
       // ONLY RESET SAMPLE IF THERE IS A PERIOD VALUE
       p->channels[i].offset = 0;
       p->channels[i].played = 0;
+      // clear the channel effects
+      p->channels[i].effect = 0;
+      p->channels[i].eparam = 0;
     }
     // ONLY RESET VOLUME IF THERE IS AN INSTRUMENT NUMBER
     if(cr[i].sample_number != 0) {
@@ -160,10 +163,6 @@ static void update_row(struct Player *p,
       p->channels[i].sample = &m->samples[cr[i].sample_number-1];
       p->channels[i].volume = p->channels[i].sample->volume / 64.0;
     }
-    // XXX:  This is a hack that needs to be fixed
-    // clear the channel effects
-    p->channels[i].effect = 0;
-    p->channels[i].eparam = 0;
     switch (cr[i].effect) {
     // These effects require processing each tick
     //////////////////////////////////////////////
