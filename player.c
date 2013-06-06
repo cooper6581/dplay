@@ -143,42 +143,44 @@ static void update_tick(struct Player *p)
     // porta up
     else if (cn->effect == 1) {
       // don't run effect for the first tick
-      if (p->ticks) {
+      //if (p->ticks) {
 	// XXX put in check to not go higher than B-3
-	cn->pitch = get_pitch(cn->sample, cn->note - cn->eparam);
-      }
+	cn->note += cn->eparam;
+	cn->pitch = get_pitch(cn->sample, cn->note);
+	//}
     }
     // porta down
     else if (cn->effect == 2) {
       // don't run effect for the first tick
-      if (p->ticks) {
+      //if (p->ticks) {
+	cn->note -= cn->eparam;
 	// XXX put in check to not go lower than C-1
-	cn->pitch = get_pitch(cn->sample, cn->note + cn->eparam);
-      }
+	cn->pitch = get_pitch(cn->sample, cn->note);
+	//}
     }
     // Porta slide
     else if (cn->effect == 3) {
-      if (p->ticks == 0) {
+      //if (p->ticks == 0) {
 	// we need to read the previous row
 	struct PatternData *cr = p->pos - 4;
 	if (cn->eparam)
 	  p->porta_speed[c] = cn->eparam;
 	if (cr[c].period)
 	  p->note_to_porta_to[c] = cr[c].period;
-      } else {
-	if (cn->note == p->note_to_porta_to[c]) {
-	  printf("hit target note: %d\n", cn->note);
-	} else {
-	  if (p->note_to_porta_to[c] > cn->note) {
+	//} else {
+	if (p->note_to_porta_to[c] > cn->note) {
 	    cn->note += p->porta_speed[c];
+	    if (cn->note >= p->note_to_porta_to[c])
+	      cn->note = p->note_to_porta_to[c];
 	    cn->pitch = get_pitch(cn->sample, cn->note);
-	  }
-	  else {
-	    cn->note -= p->porta_speed[c];
-	    cn->pitch = get_pitch(cn->sample, cn->note);
-	  }
 	}
-      }
+	else {
+	  cn->note -= p->porta_speed[c];
+	  if (cn->note <= p->note_to_porta_to[c])
+	    cn->note = p->note_to_porta_to[c];
+	  cn->pitch = get_pitch(cn->sample, cn->note);
+	}
+	// }
     }
   }
 }
@@ -198,10 +200,11 @@ static void update_row(struct Player *p,
       // ONLY RESET SAMPLE IF THERE IS A PERIOD VALUE
       p->channels[i].offset = 0;
       p->channels[i].played = 0;
-      // clear the channel effects
-      p->channels[i].effect = 0;
-      p->channels[i].eparam = 0;
     }
+    // clear the channel effects
+    p->channels[i].effect = 0;
+    p->channels[i].eparam = 0;
+
     // ONLY RESET VOLUME IF THERE IS AN INSTRUMENT NUMBER
     if(cr[i].sample_number != 0) {
       // first let's set the sample

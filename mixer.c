@@ -5,7 +5,7 @@
 #include "mixer.h"
 #include "player.h"
 
-#define FRAMES 256
+#define FRAMES 0
 
 PaStream *stream;
 
