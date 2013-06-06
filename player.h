@@ -3,4 +3,5 @@
 void play_module(struct Player *p, const struct Module *m, 
                   unsigned long count);
 void init_player(struct Player *p, struct Module *m);
+void update_buffer(struct Player *p, int framesPerBuffer);
 #endif

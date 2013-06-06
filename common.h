@@ -1,8 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define SAMPLE_RATE 44100
-#define FRAMES 441
+#define SAMPLE_RATE 44100.0
 
 static const int freq_table[] = {
   907,900,894,887,881,875,868,862,856,850,844,838,832,826,820,814,

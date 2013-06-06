@@ -16,9 +16,9 @@ static int patestCallback(const void *inputBuffer, void *outputBuffer,
   struct Player *p = (struct Player *)userData;
   struct Module *m = p->module;
   char *out = (char *) outputBuffer;
-  play_module(p, m, framesPerBuffer);
+  //play_module(p, m, framesPerBuffer);
+  update_buffer(p, framesPerBuffer);
   memcpy(out, &p->mixer_buffer[p->offset], framesPerBuffer);
-  p->offset += framesPerBuffer;
   return paContinue;
 }
 
@@ -45,7 +45,7 @@ void init_mixer(struct Player *p)
     Pa_GetDeviceInfo( outputParameters.device )->defaultLowOutputLatency;
   outputParameters.hostApiSpecificStreamInfo = NULL;
   err = Pa_OpenStream( &stream, NULL, &outputParameters, 
-                        SAMPLE_RATE, FRAMES, paClipOff, 
+                        SAMPLE_RATE, 0, paClipOff, 
                         patestCallback, p);
   if (err != paNoError) goto error;
   printf("starting stream\n");

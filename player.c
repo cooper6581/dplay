@@ -5,14 +5,13 @@
 static void update_row(struct Player *p, struct Module *m, 
                         unsigned long count);
 static void update_tick(struct Player *p);
-static void update_buffer(struct Player *p);
 static float get_pitch(struct Sample *sample, int note);
 static void get_xy(int col, int *x, int *y);
 
 void init_player(struct Player *p, struct Module *m)
 {
   p->module = m;
-  p->size = 882;
+  p->size = 512;
   p->offset = 0;
   p->num_channels = 4;
   p->order_index = 0;
@@ -35,12 +34,12 @@ void play_module(struct Player *p,
                   struct Module *m, unsigned long count)
 {
   // check to see if our buffer has been written out
-  if(p->offset >= p->size) {
-    p->offset=0;
-  }
+  //if(p->offset >= p->size) {
+  //  p->offset=0;
+  //}
   // if not, lets not waste CPU cycles
-  if(p->offset!=0)
-    return;
+  //if(p->offset!=0)
+  //  return;
   // main play routine
   p->ticks++;
   if(p->ticks >= p->speed) {
@@ -67,9 +66,9 @@ void play_module(struct Player *p,
   update_tick(p);
 }
 
-static void update_buffer(struct Player *p)
+void update_buffer(struct Player *p, int framesPerBuffer)
 {
-  for(int i = 0; i < p->size; i++) {
+  for(int i = 0; i < framesPerBuffer; i++) {
     int temp = 0;
     for (int c = 0; c < p->num_channels; c++) {
       struct Sample *s = NULL;
@@ -95,7 +94,6 @@ static void update_buffer(struct Player *p)
     temp = temp / 4.0;
     p->mixer_buffer[i] = (char)temp;
   }
-
 }
 
 // TODO:  SO insanely ghetto
@@ -145,7 +143,6 @@ static void update_tick(struct Player *p)
       }
     }
   }
-  update_buffer(p);
 }
 
 static void update_row(struct Player *p, 
@@ -211,7 +208,7 @@ static float get_pitch(struct Sample *sample, int note)
   if(sample != NULL)
     ft = sample->fine_tune;
   amiga_value = freq_table[note + ft];
-  return (7159090.5 / (amiga_value * 2.0)) / 44100.0;
+  return (7159090.5 / (amiga_value * 2.0)) / SAMPLE_RATE;
 }
 
 static void get_xy(int col, int *x, int *y)
