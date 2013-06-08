@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "common.h"
 
@@ -7,7 +8,8 @@ static void update_row(struct Player *p, struct Module *m,
 static void update_tick(struct Player *p);
 static float get_pitch(struct Sample *sample, int note);
 static void get_xy(int col, int *x, int *y);
-
+static int get_amiga_value(struct Sample *sample, int note);
+static float get_pitch_delta(struct Sample *sample, int note, int delta);
 extern long rate;
 
 void init_player(struct Player *p, struct Module *m)
@@ -30,6 +32,10 @@ void init_player(struct Player *p, struct Module *m)
     memset(&p->channels[c], 0, sizeof(struct Channel));
     p->channels[c].sample = NULL;
     p->channels[c].effect = -1;
+    p->channels[c].vibrato_pos = 0;
+    p->channels[c].vibrato_depth = 0;
+    p->channels[c].vibrato_speed = 0;
+    // XXX:  this should be in the channel struct
     p->porta_speed[c] = 0;
     p->note_to_porta_to[c] = 0;
   }
@@ -99,6 +105,7 @@ void update_buffer(struct Player *p, int framesPerBuffer)
 // This function is used to update effects that need to update each tick
 static void update_tick(struct Player *p)
 {
+  //printf("Tick: %d\n", p->ticks);
   for (int c = 0; c < p->num_channels; c++) {
     struct Channel *cn = &p->channels[c];
     int ex = 0;
@@ -144,43 +151,67 @@ static void update_tick(struct Player *p)
     else if (cn->effect == 1) {
       // don't run effect for the first tick
       //if (p->ticks) {
-	// XXX put in check to not go higher than B-3
+	int b3 = note_from_period(113);
 	cn->note += cn->eparam;
+	if (cn->note > b3)
+	  cn->note = b3;
 	cn->pitch = get_pitch(cn->sample, cn->note);
 	//}
     }
     // porta down
     else if (cn->effect == 2) {
       // don't run effect for the first tick
-      //if (p->ticks) {
+      if (p->ticks) {
+	int c1 = note_from_period(856);
 	cn->note -= cn->eparam;
-	// XXX put in check to not go lower than C-1
+	if (cn->note < c1)
+	  cn->note = c1;
 	cn->pitch = get_pitch(cn->sample, cn->note);
-	//}
+      }
     }
     // Porta slide
     else if (cn->effect == 3) {
-      //if (p->ticks == 0) {
+      if (p->ticks == 0) {
 	// we need to read the previous row
 	struct PatternData *cr = p->pos - 4;
 	if (cn->eparam)
 	  p->porta_speed[c] = cn->eparam;
 	if (cr[c].period)
 	  p->note_to_porta_to[c] = cr[c].period;
-	//} else {
-	if (p->note_to_porta_to[c] > cn->note) {
-	    cn->note += p->porta_speed[c];
-	    if (cn->note >= p->note_to_porta_to[c])
-	      cn->note = p->note_to_porta_to[c];
-	    cn->pitch = get_pitch(cn->sample, cn->note);
-	}
-	else {
-	  cn->note -= p->porta_speed[c];
-	  if (cn->note <= p->note_to_porta_to[c])
-	    cn->note = p->note_to_porta_to[c];
-	  cn->pitch = get_pitch(cn->sample, cn->note);
-	}
-	// }
+	//return;
+      }
+      if (p->note_to_porta_to[c] > cn->note) {
+	cn->note += p->porta_speed[c];
+	if (cn->note >= p->note_to_porta_to[c])
+	  cn->note = p->note_to_porta_to[c];
+	cn->pitch = get_pitch(cn->sample, cn->note);
+      }
+      else if (p->note_to_porta_to[c] < cn->note) {
+	cn->note -= p->porta_speed[c];
+	if (cn->note <= p->note_to_porta_to[c])
+	  cn->note = p->note_to_porta_to[c];
+	cn->pitch = get_pitch(cn->sample, cn->note);
+      }
+    }
+    // Vibrato
+    else if (cn->effect == 4) {
+      if (p->ticks == 0) {
+	cn->vibrato_pos = 0;
+	return;
+      }
+      if (ey)
+	cn->vibrato_depth = ey;
+      if (ex)
+	cn->vibrato_speed = ex;
+      int sin_value = sine_table[abs(cn->vibrato_pos)];
+      int delta = (sin_value * cn->vibrato_depth) / 128;
+      if (cn->vibrato_pos < 0)
+	cn->pitch = get_pitch_delta(cn->sample,cn->note,delta);
+      else
+	cn->pitch = get_pitch_delta(cn->sample,cn->note, -delta);
+      cn->vibrato_pos += cn->vibrato_speed;
+      if (cn->vibrato_pos > 31)
+	cn->vibrato_pos -= 63;
     }
   }
 }
@@ -222,6 +253,8 @@ static void update_row(struct Player *p,
     case 0x02:
     // Porta to note
     case 0x03:
+    // Vibrato
+    case 0x04:
     // Volume slide
     case 0x0A:
       p->channels[i].effect = cr[i].effect;
@@ -259,19 +292,30 @@ static void update_row(struct Player *p,
       break;
     }
     default:
-      printf("Effect %d not implemented\n", cr[i].effect);
+      ;
+      //printf("Effect %d not implemented\n", cr[i].effect);
     }
   }
 }
 
+static float get_pitch_delta(struct Sample *sample, int note, int delta)
+{
+  int amiga_value = get_amiga_value(sample, note);
+  return (7159090.5 / ((amiga_value + delta) * 2.0)) / SAMPLE_RATE;
+}
+
 static float get_pitch(struct Sample *sample, int note)
 {
-  int ft = 0;
-  int amiga_value;
+  int amiga_value = get_amiga_value(sample, note);
+  return (7159090.5 / (amiga_value * 2.0)) / SAMPLE_RATE;
+}
+
+static int get_amiga_value(struct Sample *sample, int note)
+{
+  int ft =0;
   if(sample != NULL)
     ft = sample->fine_tune;
-  amiga_value = freq_table[note + ft];
-  return (7159090.5 / (amiga_value * 2.0)) / SAMPLE_RATE;
+  return freq_table[note + ft];
 }
 
 static void get_xy(int col, int *x, int *y)

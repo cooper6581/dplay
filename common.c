@@ -6,8 +6,10 @@
 int note_from_period(int period)
 {
   for(int i = 8; i < 576; i+=16) {
-    if(period < freq_table[i] + 2 && period > freq_table[i] - 2)
+    if (period == freq_table[i])
       return i;
+    //if(period < freq_table[i] + 7 && period > freq_table[i] - 8)
+    //  return i;
   }
   return 0;
 }

@@ -7,7 +7,7 @@ data = []
 blah = []
 
 for line in f.readlines():
-  if (line[0] == ';'):
+  if (line.startswith(';')):
     raw = line.rstrip().split()
     if(len(raw) > 2):
       if(raw[1] == 'Tuning'):
@@ -22,7 +22,7 @@ for line in f.readlines():
 data.append(blah)
 f.close()
 
-for n in xrange(1,37):
+for n in xrange(1,39):
   for t in xrange(0,16):
     print data[t][n],
   print
