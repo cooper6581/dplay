@@ -3,18 +3,27 @@
 #include <time.h>
 #include "common.h"
 
-int note_from_period(int period)
+int note_from_period(int p)
 {
-  for(int i = 8; i < 576; i+=16) {
-    if (period == freq_table[i])
-      return i;
-    //if(period < freq_table[i] + 7 && period > freq_table[i] - 8)
-    //  return i;
-  }
-  return 0;
+	int imin, imid, imax;
+	imin = 0;
+	imax = sizeof(freq_table) / sizeof(freq_table[0]);
+	
+	while (imax >= imid) {
+		imid = imin + ((imax - imin) >> 1);
+		if (freq_table[imid] < p)
+			imin = imid + 1;
+		else
+			imax = imid;
+	}
+	
+	if (imax == imin && A[imin] == key)
+    		return imin;
+    	else
+    		return -1;
 }
 
 long bpm_to_rate(int bpm)
 {
-  return 1000000 / ((bpm * 2) / 5);
+	return 1000000 / ((bpm * 2) / 5);
 }
